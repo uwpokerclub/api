@@ -19,6 +19,10 @@ class Server {
     this.app.use(bodyParser.json());
     this.app.use(cookieParser());
 
+    this.app.get("/healthz", (req, res) => {
+      return res.json({ status: "ok" })
+    });
+
     // TODO: This probably isn't needed anymore
     if (this.app.get("env") === "development") {
       this.app.use((err, req, res) => {

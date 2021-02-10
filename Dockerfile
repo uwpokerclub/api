@@ -1,4 +1,4 @@
-FROM node:14.15.4-apline3.11
+FROM node:lts-alpine
 
 WORKDIR /usr/app
 
