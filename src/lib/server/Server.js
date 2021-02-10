@@ -4,6 +4,8 @@ const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 
+const APIRouteHandler = require("../../routes/api")
+
 class Server {
   constructor(db) {
     this.db = db;
@@ -19,9 +21,19 @@ class Server {
     this.app.use(bodyParser.json());
     this.app.use(cookieParser());
 
+    this.app.use(express.static(path.join(__dirname, "../../../build")))
+
+    const apiRoute = new APIRouteHandler("/api", this.db)
+
     this.app.get("/healthz", (req, res) => {
       return res.json({ status: "ok" })
     });
+
+    this.app.use(apiRoute.path, apiRoute.handler())
+
+    this.app.get("/*", (req, res) => {
+      res.sendFile(path.join(__dirname, "../../../build", "index.html"))
+    })
 
     // TODO: This probably isn't needed anymore
     if (this.app.get("env") === "development") {
