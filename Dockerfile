@@ -1,18 +1,16 @@
 FROM uwpokerclub/app:latest AS app
 
-FROM node:lts-alpine
+FROM node:14.16.0-alpine3.11
 
-WORKDIR /usr/app
-
-COPY --from=app /usr/app /usr/app/dist/build
+WORKDIR /usr/api
 
 COPY . .
 
-RUN apk add --no-cache --virtual .gyp python make g++
-RUN npm install
-RUN npm run build
+RUN apk add --no-cache --virtual .gyp python make g++ \
+    && npm install \
+    && npm run build
 
-CMD ["npm", "run", "start:dev"]
+COPY --from=app /usr/app/build ./dist/build/
 
-# CMD npm run migrate up \
-#     && npm run start:prod
+CMD npm run migrate up \
+    && npm run start:prod
