@@ -43,8 +43,8 @@ export default class ParticipantsRouteHandler extends RouteHandler {
 
           if (event.state === EVENT_STATE.ENDED) {
             participants = await query.query(
-              `SELECT users.first_name, users.last_name, users.id, entries.signed_out_at, entries.placment
-                FROM (SELECT memberships.user_id, participants.signed_out_at, participants.placement
+              `SELECT users.first_name, users.last_name, users.id, entries.signed_out_at, entries.placement, entries.id AS membership_id
+                FROM (SELECT memberships.id, memberships.user_id, participants.signed_out_at, participants.placement
                 FROM participants INNER JOIN memberships ON memberships.id = participants.membership_id
                 WHERE participants.event_id = $1) AS entries INNER JOIN users ON users.id = entries.user_id
                 ORDER BY entries.placement ASC;`,
@@ -52,8 +52,8 @@ export default class ParticipantsRouteHandler extends RouteHandler {
             );
           } else {
             participants = await query.query(
-              `SELECT users.first_name, users.last_name, users.id, entries.signed_out_at, entries.placment
-                FROM (SELECT memberships.user_id, participants.signed_out_at, participants.placement
+              `SELECT users.first_name, users.last_name, users.id, entries.signed_out_at, entries.placement, entries.id AS membership_id
+                FROM (SELECT memberships.id, memberships.user_id, participants.signed_out_at, participants.placement
                 FROM participants INNER JOIN memberships ON memberships.id = participants.membership_id
                 WHERE participants.event_id = $1) AS entries INNER JOIN users ON users.id = entries.user_id
                 ORDER BY entries.signed_out_at DESC;`,
@@ -62,8 +62,8 @@ export default class ParticipantsRouteHandler extends RouteHandler {
           }
         } else {
           participants = await query.query(
-            `SELECT users.first_name, users.last_name, users.id, entries.signed_out_at, entries.placment
-            FROM (SELECT memberships.user_id, participants.signed_out_at, participants.placement
+            `SELECT users.first_name, users.last_name, users.id, entries.signed_out_at, entries.placement, entries.id AS membership_id
+            FROM (SELECT memberships.id, memberships.user_id, participants.signed_out_at, participants.placement
             FROM participants INNER JOIN memberships ON memberships.id = participants.membership_id
             WHERE participants.event_id = $1) AS entries INNER JOIN users ON users.id = entries.user_id;`,
             []
