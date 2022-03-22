@@ -17,19 +17,26 @@ try {
   process.exit(1);
 }
 
-const clientOptions = process.env.NODE_ENV?.toLowerCase() === "production" ? {
-  ssl: {
-    rejectUnauthorized: false,
-    ca: fs.readFileSync("/usr/api/server-ca.pem").toString()
-  }
-} : {};
+/* eslint-disable */
+const clientOptions =
+  process.env.NODE_ENV?.toLowerCase() === "production"
+    ? {
+        ssl: {
+          rejectUnauthorized: false,
+          ca: fs.readFileSync("/usr/api/server-ca.pem").toString()
+        }
+      }
+    : {};
 
 // Initalize new Postgres pool.
 const dbs = new ConnectionPool(
   (process.env.DATABASE_URL as string) +
-    (process.env.NODE_ENV?.toLowerCase() === "production" ? "?sslmode=require" : ""),
-    clientOptions
+    (process.env.NODE_ENV?.toLowerCase() === "production"
+      ? "?sslmode=require"
+      : ""),
+  clientOptions
 );
+/* eslint-enable */
 
 // Initalize server
 const server = new Server(dbs);
