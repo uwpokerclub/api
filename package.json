@@ -38,7 +38,7 @@
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
     "node-pg-migrate": "^6.2.1",
-    "postgres-driver-service": "^2.0.3"
+    "postgres-driver-service": "^2.1.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.1",
