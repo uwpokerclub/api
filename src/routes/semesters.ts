@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 import { Router } from "express";
 import { orderBy, Query, where } from "postgres-driver-service";
-import { start } from "repl";
 import RouteHandler from "../lib/route_handler/RouteHandler";
 import { CODES } from "../models/constants";
 import { Semester, Transaction } from "../types";
