@@ -82,6 +82,7 @@ func (s *apiServer) SetupRoutes() {
 		eventsRoute.GET("", s.ListEvents)
 		eventsRoute.POST("", s.CreateEvent)
 		eventsRoute.GET(":eventId", s.GetEvent)
+		eventsRoute.PATCH(":eventId", s.UpdateEvent)
 		eventsRoute.POST(":eventId/end", s.EndEvent)
 	}
 

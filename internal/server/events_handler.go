@@ -58,6 +58,30 @@ func (s *apiServer) GetEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, event)
 }
 
+func (s *apiServer) UpdateEvent(ctx *gin.Context) {
+	eventId, err := strconv.ParseUint(ctx.Param("eventId"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, e.InvalidRequest(("Invalid event ID specified in request")))
+		return
+	}
+
+	var req models.UpdateEventRequest
+	err = ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, e.InvalidRequest(err.Error()))
+		return
+	}
+
+	svc := services.NewEventService(s.db)
+	updatedEvent, err := svc.UpdateEvent(uint64(eventId), &req)
+	if err != nil {
+		ctx.JSON(err.(e.APIErrorResponse).Code, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updatedEvent)
+}
+
 func (s *apiServer) EndEvent(ctx *gin.Context) {
 	eventId, err := strconv.ParseUint(ctx.Param("eventId"), 10, 32)
 	if err != nil {

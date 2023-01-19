@@ -87,6 +87,52 @@ func (es *eventService) ListEvents(semesterId string) ([]models.Event, error) {
 	return events, nil
 }
 
+func (es *eventService) UpdateEvent(eventId uint64, req *models.UpdateEventRequest) (*models.Event, error) {
+	// Retrieve old event first
+	event := models.Event{ID: eventId}
+	res := es.db.First(&event)
+
+	// Check if the error is a not found error
+	if err := res.Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, e.NotFound(err.Error())
+	}
+
+	// Any other DB error is a server error
+	if err := res.Error; err != nil {
+		return nil, e.InternalServerError(err.Error())
+	}
+
+	// If the event has ended, prevent any updates to it
+	if event.State == models.EventStateEnded {
+		return nil, e.Forbidden("This event has ended, it cannot be updated.")
+	}
+
+	// Check if fields need to be updated
+	if req.Name != nil && *req.Name != "" {
+		event.Name = *req.Name
+	}
+
+	if req.Format != nil && *req.Format != "" {
+		event.Format = *req.Format
+	}
+
+	if req.Notes != nil {
+		event.Notes = *req.Notes
+	}
+
+	if req.StartDate != nil {
+		event.StartDate = *req.StartDate
+	}
+
+	// Save changes to event
+	res = es.db.Save(&event)
+	if err := res.Error; err != nil {
+		return nil, e.InternalServerError(err.Error())
+	}
+
+	return &event, nil
+}
+
 func (es *eventService) EndEvent(eventId uint64) error {
 	// Retrieve the event first
 	event := models.Event{ID: eventId}

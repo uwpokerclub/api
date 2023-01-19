@@ -313,6 +313,56 @@ func EndEventTest() func(*testing.T) {
 	}
 }
 
+func TestEventService_UpdateEvent(t *testing.T) {
+	t.Setenv("ENVIRONMENT", "TEST")
+
+	db, err := database.OpenTestConnection()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	defer database.WipeDB(db)
+
+	set, err := testhelpers.SetupSemester(db, "Fall 2022")
+	if err != nil {
+		t.Fatalf("Failed to setup test environment: %v", err)
+	}
+
+	event, err := testhelpers.CreateEvent(db, "Event 1", set.Semester.ID, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("Failed to setup event: %v", err)
+	}
+
+	// Update name of the event only
+	newEventName := "Event 1 Updated"
+	req := models.UpdateEventRequest{
+		Name: &newEventName,
+	}
+
+	svc := NewEventService(db)
+	updatedEvent, err := svc.UpdateEvent(event.ID, &req)
+	if err != nil {
+		t.Errorf("UpdateEvent() error = %v", err)
+		return
+	}
+
+	// Check if name was udated
+	if updatedEvent.Name != newEventName {
+		t.Errorf("Event name was not updated: got = %s, expected = %s", updatedEvent.Name, newEventName)
+		return
+	}
+
+	// Check if other fields werent updated
+	if updatedEvent.Format != event.Format {
+		t.Errorf("Event format was unexpectedly updated: got = %s, expected = %s", updatedEvent.Format, event.Format)
+		return
+	}
+
+	if updatedEvent.Notes != event.Notes {
+		t.Errorf("Event notes was unexpectedly updated: got = %s, expected = %s", updatedEvent.Notes, event.Notes)
+		return
+	}
+}
+
 func TestEventService_EndEvent_PlacementAndRankingsUpdated(t *testing.T) {
 	t.Setenv("ENVIRONMENT", "TEST")
 

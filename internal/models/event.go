@@ -38,3 +38,10 @@ type ListEventsResponse struct {
 	StartDate  time.Time `json:"startDate"`
 	State      uint8     `json:"state"`
 }
+
+type UpdateEventRequest struct {
+	Name      *string    `json:"name"`
+	Format    *string    `json:"format"`
+	Notes     *string    `json:"notes"`
+	StartDate *time.Time `json:"startDate"`
+}
