@@ -1,0 +1,17 @@
+{
+    "sheet":{
+        "Sheet_ID":"XXXXX_XXXXXXXXXXXXXXX"
+    },
+    "event":{
+        "Term_Name":"",
+        "Event_ID":001
+    },
+    "api":{
+        "url":"https://api.uwpokerclub.com/"
+    },
+    "login":{
+        "username":"username",
+        "password":"password"
+        }
+
+}
