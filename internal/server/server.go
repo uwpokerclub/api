@@ -83,6 +83,8 @@ func (s *apiServer) SetupRoutes() {
 		eventsRoute.POST("", s.CreateEvent)
 		eventsRoute.GET(":eventId", s.GetEvent)
 		eventsRoute.POST(":eventId/end", s.EndEvent)
+		eventsRoute.POST(":eventId/unend", s.UndoEndEvent)
+		eventsRoute.POST(":eventId/rebuy", s.NewRebuy)
 	}
 
 	membershipRoutes := s.r.Group("/memberships", middleware.UseAuthentication)
@@ -99,7 +101,14 @@ func (s *apiServer) SetupRoutes() {
 		participantRoute.POST("", s.CreateParticipant)
 		participantRoute.POST("sign-out", s.SignOutParticipant)
 		participantRoute.POST("sign-in", s.SignInParticipant)
-		participantRoute.POST("rebuy", s.RebuyParticipant)
 		participantRoute.DELETE("", s.DeleteParticipant)
+	}
+
+	structuresRoute := s.r.Group("/structures", middleware.UseAuthentication)
+	{
+		structuresRoute.POST("", s.CreateStructure)
+		structuresRoute.GET("", s.ListStructures)
+		structuresRoute.GET(":id", s.GetStructure)
+		structuresRoute.PUT(":id", s.UpdateStructure)
 	}
 }

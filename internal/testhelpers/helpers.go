@@ -49,16 +49,27 @@ func CreateUser(db *gorm.DB, id uint64, firstName string, lastName string, email
 }
 
 func CreateEvent(db *gorm.DB, name string, semesterId uuid.UUID, startDate time.Time) (*models.Event, error) {
-	event := models.Event{
-		Name:       name,
-		Format:     "NLHE",
-		Notes:      "",
-		SemesterID: semesterId,
-		StartDate:  startDate,
-		State:      models.EventStateStarted,
+	structure := models.Structure{
+		Name: "Main Event Structure",
+	}
+	res := db.Create(&structure)
+	if res.Error != nil {
+		return nil, res.Error
 	}
 
-	res := db.Create(&event)
+	event := models.Event{
+		Name:             name,
+		Format:           "NLHE",
+		Notes:            "",
+		SemesterID:       semesterId,
+		StartDate:        startDate,
+		State:            models.EventStateStarted,
+		StructureID:      structure.ID,
+		Rebuys:           0,
+		PointsMultiplier: 1.0,
+	}
+
+	res = db.Create(&event)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -82,13 +93,12 @@ func CreateMembership(db *gorm.DB, userId uint64, semesterId uuid.UUID, paid boo
 	return &membership, nil
 }
 
-func CreateParticipant(db *gorm.DB, membershipId uuid.UUID, eventId uint64, placement uint32, signedOutAt *time.Time, rebuys uint8) (*models.Participant, error) {
+func CreateParticipant(db *gorm.DB, membershipId uuid.UUID, eventId uint64, placement uint32, signedOutAt *time.Time) (*models.Participant, error) {
 	entry := models.Participant{
 		MembershipID: membershipId,
 		EventID:      eventId,
 		Placement:    placement,
 		SignedOutAt:  signedOutAt,
-		Rebuys:       rebuys,
 	}
 
 	res := db.Create(&entry)
