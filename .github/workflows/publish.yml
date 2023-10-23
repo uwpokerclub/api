@@ -40,4 +40,4 @@ jobs:
           workload_identity_provider: '${{ secrets.GCP_WIP }}'
           service_account: '${{ secrets.GCP_SA }}'
       - name: Deploy
-        run: gcloud run deploy api-golang --image=us-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/uwpokerclub-docker/api:${GITHUB_REF##*/}
+        run: gcloud run deploy api-golang --region=us-east1 --image=us-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/uwpokerclub-docker/api:${GITHUB_REF##*/}
