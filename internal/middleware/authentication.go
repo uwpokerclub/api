@@ -1,40 +1,49 @@
 package middleware
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
+	"api/internal/authentication"
 	e "api/internal/errors"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
-func UseAuthentication(ctx *gin.Context) {
-	cookie, err := ctx.Cookie("pctoken")
-	if err != nil {
-		// Cookie not present in the request. Return 401
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, e.Unauthorized("Authentication required"))
-		return
-	}
-
-	token, err := jwt.Parse(cookie, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+func UseAuthentication(db *gorm.DB) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		var cookieKey string
+		if strings.ToLower(os.Getenv("ENVIRONMENT")) == "production" {
+			cookieKey = "uwpsc-session-id"
+		} else {
+			cookieKey = "uwpsc-dev-session-id"
+		}
+		cookie, err := ctx.Cookie(cookieKey)
+		if err != nil {
+			// Cookie not present in the request. Return 401
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, e.Unauthorized("Authentication required"))
+		}
+		// Ensure cookie is a valid UUID
+		err = uuid.Validate(cookie)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, e.Forbidden("Invalid session ID provided"))
+			return
 		}
 
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
+		sessionID, _ := uuid.Parse(cookie)
 
-	if token.Valid {
+		sessionManager := authentication.NewSessionManager(db)
+
+		// Authenticate this session ID
+		err = sessionManager.Authenticate(sessionID)
+		if err != nil {
+			ctx.AbortWithStatusJSON(err.(e.APIErrorResponse).Code, err)
+			return
+		}
+
 		ctx.Next()
-	} else if errors.Is(err, jwt.ErrTokenMalformed) {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, e.Forbidden("Malformed token"))
-	} else if errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet) {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, e.Unauthorized("Authentication required"))
-	} else {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, e.InternalServerError(fmt.Sprintf("Unknown error occurred authenticating request: %s", err.Error())))
 	}
 }

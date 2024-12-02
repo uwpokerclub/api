@@ -5,8 +5,10 @@ import (
 	"api/internal/server"
 	"fmt"
 	"os"
-	"strings"
 
+	cr "api/cron"
+
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -24,10 +26,10 @@ var startCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// Turn on gorm debug mode to print SQL queries to the console in local development.
-		if strings.ToLower(os.Getenv("ENVIRONMENT")) == "development" {
-			db.Debug()
-		}
+		// Initialize cron tasks
+		c := cron.New()
+		c.AddFunc("@daily", cr.SessionCleanup(false))
+		c.Start()
 
 		// Initialize the server
 		serv := server.NewAPIServer(db)

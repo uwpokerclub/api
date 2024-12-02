@@ -12,8 +12,8 @@ import (
 
 // apiServer
 type apiServer struct {
-	r  *gin.Engine
-	db *gorm.DB
+	Router *gin.Engine
+	db     *gorm.DB
 }
 
 func NewAPIServer(db *gorm.DB) *apiServer {
@@ -33,7 +33,7 @@ func NewAPIServer(db *gorm.DB) *apiServer {
 	// Middleware to set CORS policy
 	r.Use(middleware.CORSMiddleware)
 
-	s := &apiServer{r: r, db: db}
+	s := &apiServer{Router: r, db: db}
 
 	// Initialize all routes
 	s.SetupRoutes()
@@ -43,17 +43,23 @@ func NewAPIServer(db *gorm.DB) *apiServer {
 
 // Run starts the API server and listens on the specified port.
 func (s *apiServer) Run(port string) {
-	s.r.Run(fmt.Sprintf(":%s", port))
+	s.Router.Run(fmt.Sprintf(":%s", port))
 }
 
 func (s *apiServer) SetupRoutes() {
-	loginRoute := s.r.Group("/login")
+	loginRoute := s.Router.Group("/login")
 	{
 		loginRoute.POST("", s.CreateLogin)
-		loginRoute.POST("session", s.NewSession)
 	}
 
-	usersRoute := s.r.Group("/users", middleware.UseAuthentication)
+	sessionRoute := s.Router.Group("/session")
+	{
+		sessionRoute.POST("", s.SessionLoginHandler)
+		sessionRoute.POST("logout", s.SessionLogoutHandler)
+		sessionRoute.GET("", middleware.UseAuthentication(s.db), s.GetSessionHandler)
+	}
+
+	usersRoute := s.Router.Group("/users", middleware.UseAuthentication(s.db))
 	{
 		usersRoute.GET("", s.ListUsers)
 		usersRoute.POST("", s.CreateUser)
@@ -62,7 +68,7 @@ func (s *apiServer) SetupRoutes() {
 		usersRoute.DELETE(":id", s.DeleteUser)
 	}
 
-	semestersRoute := s.r.Group("/semesters", middleware.UseAuthentication)
+	semestersRoute := s.Router.Group("/semesters", middleware.UseAuthentication(s.db))
 	{
 		semestersRoute.GET("", s.ListSemesters)
 		semestersRoute.POST("", s.CreateSemester)
@@ -77,7 +83,7 @@ func (s *apiServer) SetupRoutes() {
 		semestersRoute.DELETE(":semesterId/transactions/:transactionId", s.DeleteTransaction)
 	}
 
-	eventsRoute := s.r.Group("/events", middleware.UseAuthentication)
+	eventsRoute := s.Router.Group("/events", middleware.UseAuthentication(s.db))
 	{
 		eventsRoute.GET("", s.ListEvents)
 		eventsRoute.POST("", s.CreateEvent)
@@ -87,7 +93,7 @@ func (s *apiServer) SetupRoutes() {
 		eventsRoute.POST(":eventId/rebuy", s.NewRebuy)
 	}
 
-	membershipRoutes := s.r.Group("/memberships", middleware.UseAuthentication)
+	membershipRoutes := s.Router.Group("/memberships", middleware.UseAuthentication(s.db))
 	{
 		membershipRoutes.GET("", s.ListMemberships)
 		membershipRoutes.POST("", s.CreateMembership)
@@ -95,7 +101,7 @@ func (s *apiServer) SetupRoutes() {
 		membershipRoutes.PATCH(":id", s.UpdateMembership)
 	}
 
-	participantRoute := s.r.Group("/participants", middleware.UseAuthentication)
+	participantRoute := s.Router.Group("/participants", middleware.UseAuthentication(s.db))
 	{
 		participantRoute.GET("", s.ListParticipants)
 		participantRoute.POST("", s.CreateParticipant)
@@ -104,7 +110,7 @@ func (s *apiServer) SetupRoutes() {
 		participantRoute.DELETE("", s.DeleteParticipant)
 	}
 
-	structuresRoute := s.r.Group("/structures", middleware.UseAuthentication)
+	structuresRoute := s.Router.Group("/structures", middleware.UseAuthentication(s.db))
 	{
 		structuresRoute.POST("", s.CreateStructure)
 		structuresRoute.GET("", s.ListStructures)
