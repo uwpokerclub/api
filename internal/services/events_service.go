@@ -293,3 +293,28 @@ func (es *eventService) NewRebuy(eventId uint64) error {
 
 	return nil
 }
+
+func (es *eventService) DeleteEvent(req *models.DeleteEventRequest) error {
+	fmt.Print("at DeleteEvent")
+
+	// Check if the event exists
+	var event models.Event
+	if err := es.db.Where("id = ?", req.ID).First(&event).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return e.NotFound("Event not found")
+		}
+		return e.InternalServerError(err.Error())
+	}
+
+	// Events cannot be deleted if they are already ended
+	if event.State == 1 {
+		return e.Forbidden("This event has already ended, it cannot be deleted.")
+	}
+
+	// Delete the event
+	if err := es.db.Delete(&event).Error; err != nil {
+		return e.InternalServerError(err.Error())
+	}
+
+	return nil
+}

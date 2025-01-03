@@ -108,3 +108,21 @@ func (s *apiServer) NewRebuy(ctx *gin.Context) {
 
 	ctx.String(http.StatusOK, "")
 }
+
+func (s *apiServer) DeleteEvent(ctx *gin.Context) {
+	var req models.DeleteEventRequest
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, e.InvalidRequest(err.Error()))
+		return
+	}
+	svc := services.NewEventService(s.db)
+	err = svc.DeleteEvent(&req)
+
+	if err != nil {
+		ctx.JSON(err.(e.APIErrorResponse).Code, err)
+		return
+	}
+
+	ctx.String(http.StatusNoContent, "")
+}
