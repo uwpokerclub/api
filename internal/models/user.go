@@ -3,7 +3,7 @@ package models
 import "time"
 
 const (
-	FacultyAHS         = "Math"
+	FacultyAHS         = "AHS"
 	FacultyArts        = "Arts"
 	FacultyEngineering = "Engineering"
 	FacultyEnvironment = "Environment"
@@ -36,4 +36,11 @@ type UpdateUserRequest struct {
 	Email     string `json:"email"`
 	Faculty   string `json:"faculty" binding:"omitempty,oneof=AHS Arts Engineering Environment Math Science"`
 	QuestID   string `json:"questId"`
+}
+
+type ListUsersFilter struct {
+	ID      *uint64
+	Name    *string
+	Email   *string
+	Faculty *string
 }

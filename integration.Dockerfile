@@ -1,4 +1,4 @@
-FROM golang:1.23.3-bullseye AS build
+FROM golang:1.23.4-bullseye AS build
 
 # Set Golang build environment variables
 ENV GO111MODULE=on
@@ -28,7 +28,7 @@ RUN go build -buildvcs=false -o /app/server -tags test main_integration.go
 EXPOSE 5000
 
 # ====================== THIN IMAGE ======================
-FROM alpine:3.20.3
+FROM alpine:3.21.2
 
 WORKDIR /app
 

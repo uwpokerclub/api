@@ -74,6 +74,7 @@ func (s *apiServer) SetupRoutes() {
 		semestersRoute.POST("", s.CreateSemester)
 		semestersRoute.GET(":semesterId", s.GetSemester)
 		semestersRoute.GET(":semesterId/rankings", s.GetRankings)
+		semestersRoute.GET(":semesterId/rankings/export", s.ExportRankings)
 
 		// Transaction routes
 		semestersRoute.GET(":semesterId/transactions", s.ListTransactions)
@@ -88,6 +89,7 @@ func (s *apiServer) SetupRoutes() {
 		eventsRoute.GET("", s.ListEvents)
 		eventsRoute.POST("", s.CreateEvent)
 		eventsRoute.GET(":eventId", s.GetEvent)
+		eventsRoute.PATCH(":eventId", s.UpdateEvent)
 		eventsRoute.POST(":eventId/end", s.EndEvent)
 		eventsRoute.POST(":eventId/unend", s.UndoEndEvent)
 		eventsRoute.POST(":eventId/rebuy", s.NewRebuy)
