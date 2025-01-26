@@ -93,6 +93,7 @@ func (s *apiServer) SetupRoutes() {
 		eventsRoute.POST(":eventId/end", s.EndEvent)
 		eventsRoute.POST(":eventId/unend", s.UndoEndEvent)
 		eventsRoute.POST(":eventId/rebuy", s.NewRebuy)
+		eventsRoute.DELETE("", s.DeleteEvent)
 	}
 
 	membershipRoutes := s.Router.Group("/memberships", middleware.UseAuthentication(s.db))

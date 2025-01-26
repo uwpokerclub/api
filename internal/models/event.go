@@ -55,3 +55,8 @@ type ListEventsResponse struct {
 	State      uint8     `json:"state"`
 	Count      int32     `json:"count"`
 }
+
+type DeleteEventRequest struct {
+	ID    uint64 `json:"id"`
+	State uint8  `json:"state"`
+}
