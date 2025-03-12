@@ -4,10 +4,12 @@ import (
 	"api/internal/database"
 	"api/internal/models"
 	"api/internal/testhelpers"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func TestEventsService(s *testing.T) {
@@ -516,5 +518,35 @@ func TestEventsService(s *testing.T) {
 		assert.NoError(t, res.Error, "Retrieve rankings after restarting event")
 
 		assert.EqualValues(t, 0, points1.Points, "Entry 1 points")
+	})
+
+	t.Run("DeleteEvent", func(t *testing.T) {
+		t.Cleanup(wipeDB)
+
+		// Setup semester
+		sem, err := testhelpers.SetupSemester(db, "Fall 2022")
+		assert.NoError(t, err, "Semester setup")
+
+		// Create event
+		event, err := testhelpers.CreateEvent(db, "Event 1", sem.Semester.ID, time.Now().UTC())
+		assert.NoError(t, err, "Event creation")
+
+		// Delete the event
+		err = eventService.DeleteEvent(&models.DeleteEventRequest{
+			ID:    event.ID,
+			State: event.State,
+		})
+		if err != nil {
+			t.Errorf("DeleteEvent() error = %v", err)
+			return
+		}
+
+		// Verify the event is deleted
+		var foundEvent models.Event
+		res := db.Where("id = ?", event.ID).First(&foundEvent)
+		if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			t.Errorf("DeleteEvent() failed to delete event from db: %v", res.Error)
+			return
+		}
 	})
 }
